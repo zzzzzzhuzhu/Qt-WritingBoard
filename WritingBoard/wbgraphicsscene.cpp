@@ -1,11 +1,12 @@
 #include "wbgraphicsscene.h"
+#include <QDebug>
 
 WbGraphicsScene::WbGraphicsScene(const QSizeF &size, QObject *parent):
     QGraphicsScene(QRectF(0, 0, size.width(), size.height()), parent)
 {
     m_pCanvasItem = new WbCanvasItem(size);
+    m_pCanvasItem->setBackgroundColor(Qt::white);
     this->addItem(m_pCanvasItem);
-
 }
 
 WbGraphicsScene::~WbGraphicsScene()
@@ -15,6 +16,7 @@ WbGraphicsScene::~WbGraphicsScene()
 
 bool WbGraphicsScene::event(QEvent *e)
 {
+//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__ << e->type();
     switch(e->type())
     {
     case QEvent::TouchEnd:

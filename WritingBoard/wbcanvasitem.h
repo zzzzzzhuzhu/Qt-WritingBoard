@@ -3,6 +3,58 @@
 
 #include <QGraphicsObject>
 
+class CLineObj
+{
+public:
+    CLineObj(const QPointF & point) {
+        m_path.moveTo(point);
+    }
+
+    int elementCount(){
+        return m_path.elementCount();
+    }
+    void createNewPath()
+    {
+        QPointF endPoint;
+        endPoint = m_path.currentPosition();
+        m_path &= QPainterPath();
+        m_path.moveTo(endPoint);
+    }
+    QPainterPath& path(){
+        return m_path;
+    }
+    void addToPath(const QPointF & p1,const QPointF & p2)
+    {
+        QPointF pt1 = (p1);
+        QPointF pt2 = (p2);
+        QPointF d = pt2 - pt1;
+        if(qAbs(d.x()) > 0 || qAbs(d.y()) >0)
+        {
+            m_path.quadTo(pt1,(pt1+pt2)/2);
+        }
+        QRectF r(p1,p2);
+        QRectF fixRect = r.normalized();
+        fixRect.adjusted(-fixRect.width(),-fixRect.width(),fixRect.width(),fixRect.width());
+        m_updateRect = fixRect;
+    }
+    QPainterPath StrokePath(int width)
+    {
+        QPainterPathStroker stroker;
+        stroker.setWidth(width);
+        stroker.setCapStyle(Qt::RoundCap);
+        stroker.setJoinStyle(Qt::RoundJoin);
+        return  stroker.createStroke(m_path);
+    }
+    QRectF updateRect(){
+        return m_updateRect;
+    }
+
+
+private:
+    QPainterPath m_path;
+    QRectF m_updateRect;
+};
+
 class WbCanvasItem : public QGraphicsObject
 {
 public:
@@ -12,16 +64,27 @@ public:
     void drawPress(int id,const QPointF &p);
     void drawMove(int id,const QPointF &lastPoint,const QPointF &curPoint);
     void drawRelease(int id, const QPointF &point);
+    void setBackgroundColor(const QColor & color);
 protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 private:
     void resize(const QSizeF & size);
+    void drawToTemp(CLineObj * obj);  //在临时层绘图
+    void drawToReal(CLineObj * obj);  //在真实层绘图
+    void initCanvas();                //初始化图层
 private:
     QSizeF m_size;
-    QImage m_canvasImage;     //在图片上绘制
-    QPainter * m_pBgPainter = nullptr;
+    QImage   *m_pTempCanvas;//临时画布
+    QPainter *m_pTempPainter = nullptr;//临时画布的painter
+
+    QImage   *m_pRealCanvas;//真实画布
+    QPainter *m_pRealPainter = nullptr;//真实画布的painter
+
+    QMap<int,CLineObj*> m_lineObjs;
+
+    QColor  m_bgColor = QColor(Qt::white);
 };
 
 #endif // WBCANVASITEM_H
