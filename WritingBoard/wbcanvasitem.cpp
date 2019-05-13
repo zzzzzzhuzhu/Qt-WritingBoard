@@ -37,7 +37,7 @@ void WbCanvasItem::drawMove(int id, const QPointF &lastPoint, const QPointF &cur
     CLineObj * obj = m_lineObjs.value(id,nullptr);
     if(!obj) return;
     obj->addToPath(lastPoint,curPoint);
-    if(obj->elementCount() > 200){
+    if(obj->elementCount() > 300){
         drawToTemp(obj);       //绘制临时层
     }
     else{
@@ -85,24 +85,20 @@ void WbCanvasItem::resize(const QSizeF &size)
 
 void WbCanvasItem::drawToTemp(CLineObj *obj)
 {
-    m_pTempPainter->begin(m_pTempCanvas);
     m_pTempPainter->setRenderHint(QPainter::Antialiasing, true);
     m_pTempPainter->setCompositionMode(QPainter::CompositionMode_Source);
     m_pTempPainter->setPen(QPen(Qt::red,5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     m_pTempPainter->fillPath(obj->StrokePath(5),Qt::red);
-    m_pTempPainter->end();
     this->update(obj->updateRect());
 }
 
 void WbCanvasItem::drawToReal(CLineObj *obj)
 {
-    m_pRealPainter->begin(m_pRealCanvas);
     m_pRealPainter->setRenderHint(QPainter::Antialiasing, true);
     m_pRealPainter->setCompositionMode(QPainter::CompositionMode_Source);
     m_pRealPainter->setPen(QPen(Qt::red,5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     QPainterPath path = obj->StrokePath(5);
     m_pRealPainter->fillPath(path,Qt::red);//填充轮廓
-    m_pRealPainter->end();
     //清空临时层
     m_pTempCanvas->fill(Qt::transparent);
     this->update(path.boundingRect());
